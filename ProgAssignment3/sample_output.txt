@@ -1,0 +1,75 @@
+This file is just to give you an idea how your Application should behave (for Part-1 only).
+
+Suppose we have 2 clients and a server
+
+
+Start server and clients using following commands:
+
+    python3 server.py -p 9000
+    python3 client.py -p 9000 -u client1
+    python3 client.py -p 9000 -u client2
+
+Now, Client1 inputs following three messages:
+
+    list
+    msg 1 client2 hello!
+    msg 3 client2 client1 client4 hello again!
+    quit
+
+
+And then, client2 inputs following:
+
+    list
+    quit
+
+
+After the completion of above commands, both clients input quit and shutdown.
+
+
+Now, after all the above commands execution, Server will have following messages on screen:
+
+    join: client1
+    join: client2
+    request_users_list: client1
+    msg: client1
+    msg: client1
+    msg: client1 to non-existent user client4
+    request_users_list: client2
+    disconnected: client1
+    disconnected: client2
+
+
+Client1 terminal output will look something like that:
+    
+    list: client1 client2
+    msg: client1: hello again!
+    quitting
+
+Client2 terminal output will look something like this:
+    
+    msg: client1: hello!
+    msg: client1: hello again!
+    list: client1 client2
+    quitting
+
+
+The packets that will be exchanged between server and clients will be as follows:
+
+client1 -> server: data|0|join 7 client1|<checksum>
+client2 -> server: data|0|join 7 client2|<checksum>
+
+client1 -> server: data|0|request_users_list 0|<checksum>
+server -> client1: data|0|response_users_list 17 2 client1 client2|<checksum>
+
+client1 -> server: data|0|send_message 16 1 client2 hello!|<checksum>
+server -> client2: data|0|forward_message 16 1 client1 hello!|<checksum>
+
+client1 -> server: data|0|send_message 38 3 client2 client1 client4 hello again!|<checksum>
+server -> client1: data|0|forward_message 22 1 client1 hello again!|<checksum>
+server -> client2: data|0|forward_message 22 1 client1 hello again!|<checksum>
+
+client2 -> server: data|0|request_users_list 0|<checksum>
+server -> client2: data|0|response_users_list 17 2 client1 client2|<checksum>
+
+client1 -> server: data|0|disconnect 7 client1|<checksum>
+client2 -> server: data|0|disconnect 7 client2|<checksum>
